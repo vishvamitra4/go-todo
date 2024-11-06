@@ -32,3 +32,7 @@ func (s *TodoService) Update(id string, updatedTodo models.Todo) (any, bool) {
 func (s *TodoService) Delete(id string) bool {
 	return s.repo.Delete(id)
 }
+
+func (s *TodoService) GetTodoMetrics() (interface{}, error) {
+	return s.repo.AggregateMetrics()
+}

@@ -9,12 +9,8 @@ import (
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
-
-// var (
-// 	todos      = []models.Todo{}
-// 	todosMutex sync.Mutex
-// )
 
 type TodoRepository struct{}
 
@@ -120,4 +116,44 @@ func (r *TodoRepository) Delete(id string) bool {
 	}
 
 	return true
+}
+
+//
+
+func (r *TodoRepository) AggregateMetrics() (interface{}, error) {
+	collection := mongodb.GetCollection("todos")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	pipeline := mongo.Pipeline{
+		// Counting total number of todos
+		bson.D{
+			{Key: "$group", Value: bson.D{
+				{Key: "_id", Value: nil},
+				{Key: "totalCount", Value: bson.D{{Key: "$sum", Value: 1}}},
+			}},
+		},
+		bson.D{
+			{Key: "$project", Value: bson.D{
+				{Key: "_id", Value: 0},
+				{Key: "totalCount", Value: 1},
+			}},
+		},
+	}
+
+	cur, error := collection.Aggregate(ctx, pipeline)
+	if error != nil {
+		log.Fatal("Error while aggragation..")
+	}
+	defer cur.Close(ctx)
+
+	// parsing the result into slice of map..
+	var metrics []bson.M
+
+	if err := cur.All(ctx, &metrics); err != nil {
+		log.Fatal("Error while parsing the result...")
+	}
+
+	return metrics, nil
 }
