@@ -17,8 +17,8 @@ func (s *TodoService) Create(todo models.Todo) models.Todo {
 	return s.repo.Create(todo)
 }
 
-func (s *TodoService) GetAll() []models.Todo {
-	return s.repo.GetAll()
+func (s *TodoService) GetAll(flag string) []models.Todo {
+	return s.repo.GetAll(flag)
 }
 
 func (s *TodoService) GetByID(id string) (models.Todo, bool) {

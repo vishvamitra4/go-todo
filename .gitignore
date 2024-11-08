@@ -24,6 +24,9 @@ go.mod
 # Environment files
 .env
 
+## notes..
+note.md
+
 # Dependency directory for vendor
 vendor/
 

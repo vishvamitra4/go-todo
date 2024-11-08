@@ -2,7 +2,9 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
+	"my-go-sever/database/clickhouse"
 	"my-go-sever/database/mongodb"
 	"my-go-sever/models"
 	"my-go-sever/services"
@@ -39,7 +41,8 @@ func (c *TodoController) CreateTodoHandler(w http.ResponseWriter, r *http.Reques
 }
 
 func (c *TodoController) GetAllTodosHandler(w http.ResponseWriter, r *http.Request) {
-	todos := c.service.GetAll()
+	flag := r.URL.Query().Get("flag")
+	todos := c.service.GetAll(flag)
 	utils.RespondWithJSON(w, http.StatusOK, models.Response{
 		Success: true,
 		Message: "All Todos fetched.",
@@ -94,7 +97,20 @@ func (c *TodoController) DeleteTodoHandler(w http.ResponseWriter, r *http.Reques
 	utils.RespondWithJSON(w, http.StatusOK, "Deleted!")
 }
 
-func (c *TodoController) GetTodoMetricsController(w http.ResponseWriter, r *http.Request) {
+// getting metrics from clickhouse...
+func (c *TodoController) GetTodoMetricsControllerClick(w http.ResponseWriter, r *http.Request) {
+	metrics, err := clickhouse.AggregateMetricsFromClickHouse()
+	if err != nil {
+		log.Println(err)
+		fmt.Println("Error While Fetching Metrics from clickhouse..")
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(metrics)
+}
+
+// getting metrics from mongo...
+func (c *TodoController) GetTodoMetricsControllerMongo(w http.ResponseWriter, r *http.Request) {
 	collection := mongodb.GetCollection("todos")
 
 	matchFields := bson.D{}

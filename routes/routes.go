@@ -25,6 +25,7 @@ func SetupRoutes(r *chi.Mux) {
 		r.Get("/{id}", controller.GetTodoHandler)
 		r.Put("/{id}", controller.UpdateTodoHandler)
 		r.Delete("/{id}", controller.DeleteTodoHandler)
-		r.Get("/metrics", controller.GetTodoMetricsController)
+		r.Get("/metrics", controller.GetTodoMetricsControllerMongo)
+		r.Get("/metrics/click", controller.GetTodoMetricsControllerClick)
 	})
 }
